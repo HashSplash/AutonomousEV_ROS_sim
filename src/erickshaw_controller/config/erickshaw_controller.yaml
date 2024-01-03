@@ -1,0 +1,16 @@
+wheel_left_controller:
+  type: velocity_controllers/JointVelocityController
+  joint: left_wheel_joint
+
+wheel_right_controller:
+  type: velocity_controllers/JointVelocityController
+  joint: right_wheel_joint
+
+handle_controller:
+  type: position_controllers/JointPositionController
+  joint: handle_joint
+  pid: {p: 100.0, i: 0.01, d: 10.0}
+
+joint_state_controller:
+  type: joint_state_controller/JointStateController
+  publish_rate: 50

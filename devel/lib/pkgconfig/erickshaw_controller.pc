@@ -1,0 +1,8 @@
+prefix=/home/harshit/ROS/catkin_ws1/devel
+
+Name: erickshaw_controller
+Description: Description of erickshaw_controller
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

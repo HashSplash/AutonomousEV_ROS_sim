@@ -1,0 +1,16 @@
+<launch>
+
+      <arg name="model" default="$(find erickshaw_description)/urdf/erickshaw.urdf.xacro" />
+      <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model)" />
+      <rosparam file= "$(find erickshaw_controller)/config/erickshaw_controller.yaml" command="load" />
+      <rosparam file="$(find joint_state_controller)/joint_state_controller.yaml" command="load" />
+      <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" 
+            respawn="true" output="screen" />
+      <node pkg="controller_manager" type="spawner" name="controller_manager" 
+            respawn="false" output="screen" args="wheel_left_controller wheel_right_controller joint_state_controller handle_controller" />
+
+      <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
+      <param name="use_gui" value="TRUE" />
+      </node>
+
+</launch>

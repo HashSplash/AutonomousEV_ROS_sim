@@ -1,0 +1,2 @@
+erickshaw_controller:erickshaw_description
+-DCATKIN_DEVEL_PREFIX=/home/harshit/ROS/catkin_ws1/devel -DCMAKE_INSTALL_PREFIX=/home/harshit/ROS/catkin_ws1/install -G Unix Makefiles

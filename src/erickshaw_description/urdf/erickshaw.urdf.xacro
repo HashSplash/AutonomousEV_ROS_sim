@@ -1,0 +1,383 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="erickshaw">
+
+    <xacro:include filename="include_file.xacro"/>
+    <xacro:include filename="erickshaw_gazebo.xacro"/>
+    <xacro:include filename="camera_gazebo.xacro"/>
+
+    <xacro:property name="PI" value="3.14159265359" />
+    <xacro:property name="effort" value="30" />
+    <xacro:property name="velocity" value="1.9" />
+    <xacro:property name="l" value="1.028571429" />
+
+
+    <!-- Color -->
+    <material name="blue">
+        <color rgba="0.2 0.2 1 1" />
+    </material>
+
+    <material name="grey">
+        <color rgba="0.5 0.5 0.5 1" />
+    </material>
+
+
+    <!-- base and chassis -->
+
+    <link name="base_link"/>
+
+    <link name="chassis_link">
+        <visual>
+            <material name="blue" />
+            <origin rpy="${PI/2} 0 0" xyz="-1.253571429 0 0.128571429" />
+            <geometry>
+                <mesh filename="package://erickshaw_description/mesh/erickshaw/rikchasiss.stl" scale="0.0214 0.0214 0.0214" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin rpy="0 0 0" xyz="-0.942857143 0 0.75" />
+            <geometry>
+                <!-- <mesh filename="package://erickshaw_description/mesh/erickshaw/rikchasiss.stl" scale="0.0214 0.0214 0.0214" /> -->
+                <box size="2.5714 0.9857 1.542857"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_box mass="85.71" x="1.7743" y="0.94286" z="1.387714">
+            <origin xyz="-0.953571 0 0.5143" rpy="0 0 0"/>
+        </xacro:inertial_box>
+    </link>
+
+    <joint name="base_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="chassis_link" />
+        <origin xyz="1.2428 0 0.3214" rpy="0 0 0" />
+    </joint>
+
+    <!-- chassis and right wheel -->
+    <link name="right_wheel_link">
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0" />
+            <geometry>
+                <mesh filename="package://erickshaw_description/mesh/erickshaw/ewheel.stl" scale="0.0214 0.0214 0.0214" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin rpy="${pi/2} 0 0" xyz="0 0 0" />
+            <geometry>
+                <!-- <mesh filename="package://erickshaw_description/mesh/erickshaw/ewheel.stl" scale="0.0214 0.0214 0.0214" /> -->
+                <cylinder radius="0.3214" length="0.15" />
+            </geometry>
+        </collision>
+        <xacro:inertial_cylinder mass="1.4571" length="0.084428" radius="0.213">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_cylinder>
+    </link>
+
+    <joint name="right_wheel_joint" type="continuous">
+        <parent link="chassis_link" />
+        <child link="right_wheel_link" />
+        <origin xyz="0 0.6 0" rpy="0 0 0" />
+        <axis xyz="0 -1 0" />
+    </joint>
+
+
+
+    <!-- chassis and left wheel -->
+    <link name="left_wheel_link">
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0" />
+            <geometry>
+                <mesh filename="package://erickshaw_description/mesh/erickshaw/ewheel.stl" scale="0.0214 0.0214 0.0214" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin rpy="${pi/2} 0 0" xyz="0 0 0" />
+            <geometry>
+                <!-- <mesh filename="package://erickshaw_description/mesh/erickshaw/ewheel.stl" scale="0.0214 0.0214 0.0214" /> -->
+                <cylinder radius="0.3214" length="0.15" />
+            </geometry>
+        </collision>
+        <xacro:inertial_cylinder mass="1.4571" length="0.084428" radius="0.213">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_cylinder>
+    </link>
+
+    <joint name="left_wheel_joint" type="continuous">
+        <parent link="chassis_link" />
+        <child link="left_wheel_link" />
+        <origin xyz="0 -0.6 0" rpy="0 0 0" />
+        <axis xyz="0 -1 0" />
+        <mimic joint="right_wheel_joint" multiplier="1" offset="0" />
+    </joint>
+
+
+
+    <!-- roof and chassis -->
+    <link name="roof_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
+            <geometry>
+                <mesh filename="package://erickshaw_description/mesh/erickshaw/roof.stl" scale="0.0214 0.0214 0.0214" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <!-- <mesh filename="package://erickshaw_description/mesh/erickshaw/roof.stl" scale="0.0214 0.0214 0.0214" /> -->
+                <box size="2.8714 0.9857 1.2857" />
+            </geometry>
+        </collision>
+        <xacro:inertial_box mass="11.5714" x="2.0442" y="0.9986" z="2.5714">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </xacro:inertial_box>
+    </link>
+
+    <joint name="roof_joint" type="fixed">
+        <parent link="chassis_link" />
+        <child link="roof_link" />
+        <origin rpy="0 0 0" xyz="-1.2536 0 1.5857" />
+    </joint>
+
+
+
+    <!-- handle_link and chassis -->
+    <link name="handle_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="${PI/2} 0 0"></origin>
+            <material name="grey" />
+            <geometry>
+                <cylinder radius="0.03" length="0.709714286"></cylinder>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="${PI/2} 0 0"></origin>
+            <geometry>
+                <cylinder radius="0.03" length="0.709714286"></cylinder>
+            </geometry>
+        </collision>
+        <xacro:inertial_cylinder mass="0.8571" radius="0.03" length="0.709714286">
+            <origin xyz="0 0 0" rpy="${pi/2} 0 0"/>
+        </xacro:inertial_cylinder>
+    </link>
+
+    <joint name="handle_joint" type="revolute">
+        <parent link="chassis_link" />
+        <child link="handle_link" />
+        <origin rpy="0 0 0" xyz="-2.3914 0 0.7928" />
+        <axis xyz="0 0 -1" />
+        <limit lower="-${PI/4 -0.1 }" upper="${PI/4 -0.1}" effort="${effort}" velocity="${velocity}" />
+    </joint>
+
+
+    <!-- holder_r_link and handle_joint -->
+    <link name="holder_r_link">
+        <visual>
+            <material name="grey" />
+            <origin rpy="0 0 0" xyz="0 0 -${l/2}" />
+            <geometry>
+                <cylinder radius="0.03" length="${l}"></cylinder>
+            </geometry>
+        </visual>
+        <collision>
+            <origin rpy="0 0 0" xyz="0 0 -${l/2}" />
+            <geometry>
+                <cylinder radius="0.03" length="${l}"></cylinder>
+            </geometry>
+        </collision>
+        <xacro:inertial_cylinder mass="1.5" radius="0.03" length="${l}">
+            <origin xyz="0 0 -${l/2}" rpy="0 0 0" />
+        </xacro:inertial_cylinder>
+    </link>
+
+    <joint name="holder_r_joint" type="fixed">
+        <parent link="handle_link" />
+        <child link="holder_r_link" />
+        <origin rpy="0 ${pi/6} 0" xyz="0 0.1286 0" />
+
+    </joint>
+    <!-- holder_l_link and handle_link -->
+    <link name="holder_l_link">
+        <visual>
+            <material name="grey" />
+            <origin rpy="0 0 0" xyz="0 0 -${l/2}" />
+            <geometry>
+                <cylinder radius="0.03" length="${l}"></cylinder>
+            </geometry>
+        </visual>
+        <collision>
+            <origin rpy="0 0 0" xyz="0 0 -${l/2}" />
+            <geometry>
+                <cylinder radius="0.03" length="${l}"></cylinder>
+            </geometry>
+        </collision>
+        <xacro:inertial_cylinder mass="1.5" radius="0.03" length="${l}">
+            <origin xyz="0 0 -${l/2}" rpy="0 0 0" />
+        </xacro:inertial_cylinder>
+    </link>
+
+    <joint name="holder_l_joint" type="fixed">
+        <parent link="handle_link" />
+        <child link="holder_l_link" />
+        <origin rpy="0 ${pi/6} 0" xyz="0 -0.1286 0" />
+    </joint>
+
+    <!-- front_wheel_link and handle_link -->
+    <link name="front_wheel_link">
+        <visual>
+            <origin rpy="0 0 0" xyz="0 0 0" />
+            <geometry>
+                <mesh filename="package://erickshaw_description/mesh/erickshaw/ewheel.stl" scale="0.0214 0.0214 0.0214" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin rpy="${pi/2} 0 0" xyz="0 0 0" />
+            <geometry>
+                <!-- <mesh filename="package://erickshaw_description/mesh/erickshaw/ewheel.stl" scale="0.0214 0.0214 0.0214" /> -->
+                <cylinder radius="0.3214" length="0.15" />
+            </geometry>
+        </collision>
+        <xacro:inertial_cylinder mass="1.4571" length="0.08443" radius="0.213">
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_cylinder>
+    </link>
+
+    <joint name="front_wheel_joint" type="continuous">
+        <parent link="handle_link" />
+        <child link="front_wheel_link" />
+        <origin rpy="0 0 0" xyz="-0.4714 0 -0.7928" />
+        <axis xyz="0 -1 0" />
+    </joint>
+
+
+    <!-- chassis_link and battery_bb  -->
+    <link name="battery_bb_link">
+        <visual>
+            <origin xyz="0 0 -0.107143" rpy="${PI/2} 0 0" />
+            <geometry>
+                <mesh filename="package://erickshaw_description/mesh/erickshaw/battery.stl" scale="0.0214 0.0214 0.0214" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 -0.107143" rpy="${PI/2} 0 0" />
+            <geometry>
+                <mesh filename="package://erickshaw_description/mesh/erickshaw/battery.stl" scale="0.0214 0.0214 0.0214" />
+            </geometry>
+        </collision>
+        <xacro:inertial_box mass="19.286" x="0.2143" y="0.5143" z="0.2143">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </xacro:inertial_box>
+    </link>
+
+    <joint name="battery_bb_joint" type="fixed">
+        <parent link="chassis_link" />
+        <child link="battery_bb_link" />
+        <origin rpy="0 0 0" xyz="0.04286 0 0.257143" />
+    </joint>
+
+    <!-- chassis_link and battery_bf  -->
+    <link name="battery_bf_link">
+        <visual>
+            <origin xyz="0 0 -0.107143" rpy="${PI/2} 0 0" />
+            <geometry>
+                <mesh filename="package://erickshaw_description/mesh/erickshaw/battery.stl" scale="0.0214 0.0214 0.0214" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 -0.107143" rpy="${PI/2} 0 0" />
+            <geometry>
+                <mesh filename="package://erickshaw_description/mesh/erickshaw/battery.stl" scale="0.0214 0.0214 0.0214" />
+            </geometry>
+        </collision>
+        <xacro:inertial_box mass="19.286" x="0.2143" y="0.5143" z="0.2143">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </xacro:inertial_box>
+    </link>
+
+    <joint name="battery_bf_joint" type="fixed">
+        <parent link="chassis_link" />
+        <child link="battery_bf_link" />
+        <origin rpy="0 0 0" xyz="-0.19286 0 0.257143" />
+    </joint>
+
+
+    <!-- chassis_link and battery_fl  -->
+    <link name="battery_fl_link">
+        <visual>
+            <origin xyz="0 0 -0.107143" rpy="${PI/2} 0 0" />
+            <geometry>
+                <mesh filename="package://erickshaw_description/mesh/erickshaw/battery.stl" scale="0.0214 0.0214 0.0214" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 -0.107143" rpy="${PI/2} 0 0" />
+            <geometry>
+                <mesh filename="package://erickshaw_description/mesh/erickshaw/battery.stl" scale="0.0214 0.0214 0.0214" />
+            </geometry>
+        </collision>
+        <xacro:inertial_box mass="19.286" x="0.2143" y="0.5143" z="0.2143">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </xacro:inertial_box>
+    </link>
+
+    <joint name="battery_fl_joint" type="fixed">
+        <parent link="chassis_link" />
+        <child link="battery_fl_link" />
+        <origin rpy="0 0 0" xyz="-1.0286 -0.19286 0.257143" />
+    </joint>
+
+    <!-- chassis_link and battery_fr  -->
+    <link name="battery_fr_link">
+        <visual>
+            <origin xyz="0 0 -0.107143" rpy="${PI/2} 0 0" />
+            <geometry>
+                <mesh filename="package://erickshaw_description/mesh/erickshaw/battery.stl" scale="0.0214 0.0214 0.0214" />
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 -0.107143" rpy="${PI/2} 0 0" />
+            <geometry>
+                <mesh filename="package://erickshaw_description/mesh/erickshaw/battery.stl" scale="0.0214 0.0214 0.0214" />
+            </geometry>
+        </collision>
+        <xacro:inertial_box mass="19.286" x="0.2143" y="0.5143" z="0.2143">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </xacro:inertial_box>
+    </link>
+
+    <joint name="battery_fr_joint" type="fixed">
+        <parent link="chassis_link" />
+        <child link="battery_fr_link" />
+        <origin rpy="0 0 0" xyz="-1.0286 0.19286 0.257143" />
+    </joint>
+
+<!-- chassis_link and camera -->
+<!-- 
+    <link name="camera_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <material name="grey"/>
+            <geometry>
+                <box size="0.15 0.25 0.25"/>
+            </geometry>
+        </visual> -->
+
+
+        <!-- not includng collision for greater speed -->
+
+        <!-- <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.15 0.25 0.25"/>
+            </geometry>
+        </collision>
+        <xacro:inertial_box mass="0.1" x="0.15" y="0.25" z="0.25">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+        </xacro:inertial_box>
+    </link>
+
+    <joint name="camera_joint" type="fixed">
+        <parent link="chassis_link"/>
+        <child link="camera_link"/>
+        <origin xyz="-6.3 0 3.4" rpy="0 -${PI/7} 0"/>
+    </joint> -->
+
+
+</robot>
