@@ -15,34 +15,47 @@ from sensor_msgs.msg import Image
 ym_per_pix = 30 / 720
 xm_per_pix = 3.7 / 720
 
-def read_video(video_path):
-    # Read input video
-    video = cv2.VideoCapture(video_path)
-    return video
+def nothing(x):
+    pass
+
+cv2.namedWindow("Trackbars")
+
+cv2.createTrackbar("L - H", "Trackbars", 0, 255, nothing)
+cv2.createTrackbar("L - S", "Trackbars", 0, 255, nothing)
+cv2.createTrackbar("L - V", "Trackbars", 200, 255, nothing)
+cv2.createTrackbar("U - H", "Trackbars", 255, 255, nothing)
+cv2.createTrackbar("U - S", "Trackbars", 50, 255, nothing)
+cv2.createTrackbar("U - V", "Trackbars", 255, 255, nothing)
 
 ###########     applpying filters on the image to get the edges     ##################3333333
-def process_image(image):
+def process_image(image,l_h,l_s,l_v,u_h,u_s,u_v):
     # Apply HLS color filtering to filter out white lane lines
     hls = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
-    lower_white = np.array([0, 160, 10])
-    upper_white = np.array([255, 255, 255])
+    # lower_white = np.array([0, 109, 124])
+    # upper_white = np.array([149, 149, 149])
+    lower_white = np.array([l_h, l_s, l_v])
+    upper_white = np.array([u_h, u_s, u_v])
     white_mask = cv2.inRange(hls, lower_white, upper_white)
     white_lines = cv2.bitwise_and(image, image, mask=white_mask)
 
     # Convert image to grayscale, apply threshold, blur & extract edges
     gray = cv2.cvtColor(white_lines, cv2.COLOR_BGR2GRAY)
-    _, thresh = cv2.threshold(gray, 160, 255, cv2.THRESH_BINARY)
+    _, thresh = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
     blur = cv2.GaussianBlur(thresh, (3, 3), 0)
     canny = cv2.Canny(blur, 40, 60)
 
-    return image, white_lines, gray, thresh, blur, canny
+    return image, white_lines, gray, thresh, blur, canny, white_mask
 
 
 #########   Transforming normal image to Top-Down view   ###################
 def perspective_warp(image):
     # Define perspective transformation points
-    src = np.float32([[600, 540], [685, 540], [200, 720], [805, 720]])
-    dst = np.float32([[200, 0], [1200, 0], [200, 710], [1200, 710]])
+    # src = np.float32([[600, 540], [685, 540], [200, 720], [805, 720]])
+    # dst = np.float32([[200, 0], [1200, 0], [200, 710], [1200, 710]])
+
+    src = np.float32([[450,120], [0,472], [900,120], [1200,472]])
+    dst = np.float32([[0,0], [0,720], [1280, 0], [1280, 720]])
+
 
     # Get perspective transformation matrix
     matrix = cv2.getPerspectiveTransform(src, dst)
@@ -298,10 +311,17 @@ class img_rec:
 
         frame=cv_image
         # cv2.imshow("Final", frame)
-        frame=cv2.resize(frame,(1280,720))
+        frame=cv2.resize(frame,(1200,720))
 
         birdseye, minverse = perspective_warp(frame)
-        processed_image = process_image(birdseye)
+        l_h = cv2.getTrackbarPos("L - H", "Trackbars")
+        l_s = cv2.getTrackbarPos("L - S", "Trackbars")
+        l_v = cv2.getTrackbarPos("L - V", "Trackbars")
+        u_h = cv2.getTrackbarPos("U - H", "Trackbars")
+        u_s = cv2.getTrackbarPos("U - S", "Trackbars")
+        u_v = cv2.getTrackbarPos("U - V", "Trackbars")
+        # processed_image = process_image(birdseye,l_h,l_s,l_v,u_h,u_s,u_v)
+        processed_image = process_image(birdseye,0,62,0,95,146,255)
         hist, left_base, right_base = plot_histogram(processed_image[3])
         ploty, left_fit, right_fit, left_fitx, right_fitx = slide_window_search(processed_image[3], hist)
         draw_info = general_search(processed_image[3], left_fit, right_fit)
@@ -309,9 +329,10 @@ class img_rec:
         mean_pts, result = draw_lane_lines(frame, processed_image[3], minverse, draw_info)
         self.deviation, self.direction_dev = off_center(mean_pts, frame)
         cv2.imshow("Final", result)
-        # cv2.imshow("Final",frame )
+        # cv2.imshow("Final1",birdseye)
+        cv2.imshow("Final2",processed_image[3])
         cv2.waitKey(2)
-        # status=cv2.imwrite("/home/harshit/ROS/catkin_ws1/src/erickshaw_ocv/scripts/image_resized.png",frame)
+        # status=cv2.imwrite("/home/harshit/ROS/catkin_ws1/src/erickshaw_ocv/scripts/perspective_warp.png",birdseye)
         # cv2.destroyAllWindows()
 
     def return_val(self):
